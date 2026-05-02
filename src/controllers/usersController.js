@@ -1,11 +1,9 @@
 //router.post('/login', (req, res) => {
 //  res.status(201).json({message: 'User Login'});
 //});
-//router.post('/register', (req, res) => {
-//  res.status(201).json({message: 'User Registered'});
-//});
 
 const pool = require('../db');
+const bcrypt = require('bcryptjs');
 
 exports.getAllUsers = async (req, res) => {
   const result = await pool.query('SELECT * FROM users');
@@ -25,15 +23,19 @@ exports.getUserById = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   const { email, password } = req.body;
-
-  //logic to salt and hash password before storing.
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password required' });
+  }
 
   try {
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
     const result = await pool.query(
       `INSERT INTO users (email, password_hash)
        VALUES ($1, $2)
-       RETURNING *`,
-      [email, password]
+       RETURNING id, email`,
+      [email, passwordHash]
     );
 
     res.status(201).json(result.rows[0]);
@@ -60,19 +62,33 @@ exports.removeUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
-  const { email, password_hash } = req.body;
+  const { email, password } = req.body;
 
-  const result = await pool.query(
-    `UPDATE users
-     SET email = $1, password_hash = $2
-     WHERE id = $3
-     RETURNING *`,
-    [email, password_hash, id]
-  );
+  try {
+    let passwordHash;
 
-  if (result.rows.length === 0) {
-    return res.status(404).json({ message: 'User not found' });
+    if (password) {
+        const saltRounds = 10;
+        passwordHash = await bcrypt.hash(password, saltRounds);
+    }
+
+    const saltRounds = 10;
+    passwordHash = await bcrypt.hash(password, saltRounds);
+
+    const result = await pool.query(
+        `UPDATE users
+        SET email = $1, password_hash = COALESCE($2, password_hash)
+        WHERE id = $3
+        RETURNING id, email`,
+        [email, passwordHash, id]
+    );
+
+    if (result.rows.length === 0) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error'});
   }
-
-  res.json(result.rows[0]);
 };
