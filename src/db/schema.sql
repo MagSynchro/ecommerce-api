@@ -11,7 +11,7 @@ password_hash TEXT NOT NULL
 );
 CREATE TABLE products (
 id SERIAL PRIMARY KEY,
-name VARCHAR(255) NOT NULL,
+name VARCHAR(255) UNIQUE NOT NULL,
 price DECIMAL(10,2) NOT NULL,
 description TEXT
 );
