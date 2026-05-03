@@ -8,9 +8,11 @@ router.get('/:id', userController.getUserById);
 
 router.post('/login',  passport.authenticate('local'),
   (req, res) => {
+    const { id, email } = req.user;
+
     res.json({
       message: 'Login successful',
-      user: req.user
+      user: { id, email }
     });
   }
 );
