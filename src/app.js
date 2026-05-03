@@ -1,6 +1,8 @@
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 require('./config/passport');
 
 const app = express();
@@ -17,6 +19,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(express.json());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 const userRoutes = require('./routes/users');
 const productRoutes = require('./routes/products');
