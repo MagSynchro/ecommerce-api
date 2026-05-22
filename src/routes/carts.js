@@ -11,6 +11,42 @@ function ensureAuthenticated(req, res, next) {
 
 router.use(ensureAuthenticated);
 
+/**
+ * @swagger
+ * tags:
+ *   name: Cart
+ *   description: Shopping cart management (requires authentication)
+ */
+
+/**
+ * @swagger
+ * /cart:
+ *   get:
+ *     summary: Get current user's cart
+ *     tags:
+ *       - Cart
+ *     responses:
+ *       200:
+ *         description: List of cart items
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   price:
+ *                     type: number
+ *                   quantity:
+ *                     type: integer
+ *       401:
+ *         description: Unauthorized
+ */
+
 router.get('/', async (req, res) => {
   try {
     const userId = req.user.id;
@@ -27,6 +63,47 @@ router.get('/', async (req, res) => {
     res.status(500).json({message: 'Server error'});
   }
   });
+
+/**
+ * @swagger
+ * /cart:
+ *   post:
+ *     summary: Add product to cart
+ *     tags:
+ *       - Cart
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - product_id
+ *               - quantity
+ *             properties:
+ *               product_id:
+ *                 type: integer
+ *               quantity:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Item added to cart
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 user_id:
+ *                   type: integer
+ *                 product_id:
+ *                   type: integer
+ *                 quantity:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ */
 
 router.post('/', async (req, res) => {
   try {
@@ -47,6 +124,40 @@ router.post('/', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+/**
+ * @swagger
+ * /cart/{id}:
+ *   put:
+ *     summary: Update cart item quantity
+ *     tags:
+ *       - Cart
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Cart item ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - quantity
+ *             properties:
+ *               quantity:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Cart item updated
+ *       404:
+ *         description: Cart item not found
+ *       401:
+ *         description: Unauthorized
+ */
 
 router.put('/:id', async (req, res) => {
   const userId = req.user.id;
@@ -73,6 +184,29 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+/**
+ * @swagger
+ * /cart/{id}:
+ *   delete:
+ *     summary: Remove item from cart
+ *     tags:
+ *       - Cart
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Cart item ID
+ *     responses:
+ *       204:
+ *         description: Item removed successfully
+ *       404:
+ *         description: Cart item not found
+ *       401:
+ *         description: Unauthorized
+ */
 
 router.delete('/:id', async (req, res) => {
   const userId = req.user.id;

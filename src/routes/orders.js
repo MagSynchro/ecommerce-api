@@ -11,6 +11,34 @@ function ensureAuthenticated(req, res, next) {
 
 router.use(ensureAuthenticated);
 
+/**
+ * @swagger
+ * /orders:
+ *   get:
+ *     summary: Get all orders for the logged-in user
+ *     tags:
+ *       - Orders
+ *     responses:
+ *       200:
+ *         description: List of user orders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   user_id:
+ *                     type: integer
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized
+ */
+
 router.get('/', async (req, res) => {
   const userId = req.user.id;
 
@@ -30,6 +58,55 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+/**
+ * @swagger
+ * /orders/{id}:
+ *   get:
+ *     summary: Get a specific order with items
+ *     tags:
+ *       - Orders
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Order ID
+ *     responses:
+ *       200:
+ *         description: Order details with items
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 order:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       product_id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       quantity:
+ *                         type: integer
+ *                       price_at_time:
+ *                         type: number
+ *       404:
+ *         description: Order not found
+ *       401:
+ *         description: Unauthorized
+ */
 
 router.get('/:id', async (req, res) => {
   const userId = req.user.id;
@@ -68,6 +145,31 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+/**
+ * @swagger
+ * /orders:
+ *   post:
+ *     summary: Checkout cart and create order
+ *     tags:
+ *       - Orders
+ *     responses:
+ *       201:
+ *         description: Order created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 order_id:
+ *                   type: integer
+ *       400:
+ *         description: Cart is empty
+ *       401:
+ *         description: Unauthorized
+ */
 
 router.post('/', async (req, res) => {
   const userId = req.user.id;
