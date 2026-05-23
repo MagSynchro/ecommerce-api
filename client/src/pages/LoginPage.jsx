@@ -1,55 +1,62 @@
 import { useState } from "react";
+import { loginUser } from "../api/auth";
 
 function LoginPage() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
     });
-  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
+    };
 
-    console.log("Login form submitted:", formData);
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-  return (
-    <div>
-      <h2>Login</h2>
+        try {
+            const data = await loginUser(formData);
 
-      <form onSubmit={handleSubmit}>
+            console.log("Login success:", data);
+        } catch (err) {
+            console.error("Login failed:", err.message);
+        }
+    };
+
+    return (
         <div>
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-        </div>
+            <h2>Login</h2>
 
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-        </div>
+            <form onSubmit={handleSubmit}>
+                <div>
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                    />
+                </div>
 
-        <button type="submit">
-          Login
-        </button>
-      </form>
-    </div>
-  );
+                <div>
+                    <label>Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <button type="submit">
+                    Login
+                </button>
+            </form>
+        </div>
+    );
 }
 
 export default LoginPage;

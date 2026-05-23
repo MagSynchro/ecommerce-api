@@ -1,66 +1,73 @@
 import { useState } from "react";
+import { registerUser } from "../api/auth";
 
 function RegisterPage() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+        confirmPassword: "",
     });
-  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
+    };
 
-    console.log("Register form submitted:", formData);
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-  return (
-    <div>
-      <h2>Create Account</h2>
+        try {
+            const data = await registerUser(formData);
 
-      <form onSubmit={handleSubmit}>
+            console.log("Registration success:", data);
+        } catch (err) {
+            console.error("Registration failed:", err.message);
+        }
+    };
+
+    return (
         <div>
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-        </div>
+            <h2>Create Account</h2>
 
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-        </div>
+            <form onSubmit={handleSubmit}>
+                <div>
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                    />
+                </div>
 
-        <div>
-          <label>Confirm Password</label>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-          />
-        </div>
+                <div>
+                    <label>Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                    />
+                </div>
 
-        <button type="submit">
-          Create Account
-        </button>
-      </form>
-    </div>
-  );
+                <div>
+                    <label>Confirm Password</label>
+                    <input
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <button type="submit">
+                    Create Account
+                </button>
+            </form>
+        </div>
+    );
 }
 
 export default RegisterPage;
