@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getProducts } from "../api/products";
-import { addToCart } from "../api/localCart";
+import { useCart } from "../context/CartContext";
 
 import "../styles/products.css";
 
@@ -8,6 +8,8 @@ function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [cartMessage, setCartMessage] = useState("");
+
+  const { addToCart } = useCart();
 
   useEffect(() => {
     getProducts()
@@ -17,6 +19,7 @@ function ProductsPage() {
 
   const handleAddToCart = (product) => {
     addToCart(product);
+
     setCartMessage(`${product.name} added to cart`);
 
     setTimeout(() => setCartMessage(""), 1500);

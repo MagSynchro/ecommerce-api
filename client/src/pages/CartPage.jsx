@@ -1,39 +1,30 @@
-import { useEffect, useState } from "react";
-import { updateQuantity, removeFromCart } from "../api/localCart";
-
-function getCart() {
-  return JSON.parse(localStorage.getItem("cart")) || [];
-}
+import { useCart } from "../context/CartContext";
 
 function CartPage() {
-  const [cart, setCart] = useState([]);
+  const { cart, updateQuantity, removeFromCart } = useCart();
 
-  useEffect(() => {
-    setCart(getCart());
-  }, []);
+  const total = cart.reduce((sum, item) => {
+    return sum + Number(item.price || 0) * item.quantity;
+  }, 0);
 
-  const refreshCart = () => {
-    setCart(getCart());
+  const handleDecrease = (item) => {
+    if (item.quantity === 1) {
+      const confirmRemove = window.confirm(
+        "Quantity is 1. Remove item from cart?"
+      );
+
+      if (confirmRemove) {
+        removeFromCart(item.id);
+      }
+      return;
+    }
+
+    updateQuantity(item.id, item.quantity - 1);
   };
 
   const handleIncrease = (item) => {
     updateQuantity(item.id, item.quantity + 1);
-    refreshCart();
   };
-
-  const handleDecrease = (item) => {
-    updateQuantity(item.id, item.quantity - 1);
-    refreshCart();
-  };
-
-  const handleRemove = (item) => {
-    removeFromCart(item.id);
-    refreshCart();
-  };
-
-  const total = cart.reduce((sum, item) => {
-  return sum + item.price * item.quantity;
-}, 0);
 
   if (cart.length === 0) {
     return <h2>Your cart is empty</h2>;
@@ -46,7 +37,8 @@ function CartPage() {
       {cart.map((item) => (
         <div key={item.id} className="cart-item">
           <h3>{item.name}</h3>
-          <p>Price: ${item.price}</p>
+
+          <p>Price: ${Number(item.price || 0).toFixed(2)}</p>
 
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <button onClick={() => handleDecrease(item)}>-</button>
@@ -54,9 +46,11 @@ function CartPage() {
             <button onClick={() => handleIncrease(item)}>+</button>
           </div>
 
-          <p>Subtotal: ${(item.price * item.quantity).toFixed(2)}</p>
+          <p>
+            Subtotal: ${(Number(item.price || 0) * item.quantity).toFixed(2)}
+          </p>
 
-          <button onClick={() => handleRemove(item)}>
+          <button onClick={() => removeFromCart(item.id)}>
             Remove
           </button>
         </div>
