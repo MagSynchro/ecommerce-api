@@ -1,21 +1,20 @@
+import './App.css';
+import { Routes, Route } from 'react-router-dom';
+
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
-import { useState } from 'react';
-
-import './App.css';
 
 function App() {
-  const [page, setPage] = useState("products");
-
   return (
     <div>
       <header>
-        <button onClick={() => setPage("products")}>Products</button>
-        <button onClick={() => setPage("cart")}>Cart</button>
+        <h1>E-Commerce Frontend</h1>
       </header>
 
-      {page === "products" && <ProductsPage />}
-      {page === "cart" && <CartPage />}
+      <Routes>
+        <Route path="/" element={<ProductsPage />} />
+        <Route path="/cart" element={<CartPage />} />
+      </Routes>
     </div>
   );
 }
