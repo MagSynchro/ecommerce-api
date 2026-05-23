@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { loginUser } from "../api/auth";
+import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -18,9 +19,9 @@ function LoginPage() {
         e.preventDefault();
 
         try {
-            const data = await loginUser(formData);
+            const data = await login(formData);
 
-            console.log("Login success:", data);
+            console.log("Login success:", data);            
         } catch (err) {
             console.error("Login failed:", err.message);
         }

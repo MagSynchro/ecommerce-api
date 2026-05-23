@@ -1,7 +1,3 @@
-//router.post('/login', (req, res) => {
-//  res.status(201).json({message: 'User Login'});
-//});
-
 const pool = require('../../../database/connection');
 const bcrypt = require('bcryptjs');
 
