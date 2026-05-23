@@ -4,6 +4,14 @@ export function getCart() {
   return JSON.parse(localStorage.getItem(CART_KEY)) || [];
 }
 
+export function getCartItemCount() {
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  return cart.reduce((total, item) => {
+    return total + item.quantity;
+  }, 0);
+}
+
 export function addToCart(product) {
   const cart = getCart();
 
