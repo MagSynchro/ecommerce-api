@@ -41,3 +41,25 @@
   color: green;
   font-weight: bold;
 }
+
+.products-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.cart-toast {
+  position: fixed;
+  background: #222;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+
+  pointer-events: none;
+  opacity: 0.95;
+
+  z-index: 9999;
+}
