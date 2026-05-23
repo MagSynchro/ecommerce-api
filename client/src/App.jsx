@@ -1,5 +1,5 @@
 import './App.css';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
@@ -9,6 +9,11 @@ function App() {
     <div>
       <header>
         <h1>E-Commerce Frontend</h1>
+        <nav>
+          <Link to="/">Products</Link>
+          {' | '}
+          <Link to="/cart">Cart</Link>
+        </nav>
       </header>
 
       <Routes>
