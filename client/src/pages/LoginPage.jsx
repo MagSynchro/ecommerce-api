@@ -1,12 +1,20 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function LoginPage() {
+
     const { login } = useAuth();
     const [formData, setFormData] = useState({
         email: "",
         password: "",
     });
+    const [error, setError] = useState("");
+
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const from = location.state?.from?.pathname || "/";
 
     const handleChange = (e) => {
         setFormData({
@@ -17,20 +25,32 @@ function LoginPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
 
         try {
             const data = await login(formData);
 
-            console.log("Login success:", data);            
+            console.log("Login success:", data);
+
+            navigate(from, { replace: true });
         } catch (err) {
-            console.error("Login failed:", err.message);
+            setError(err.message || "Login failed");
+
+            setFormData((prev) => ({
+                ...prev,
+                password: ""
+            }));
         }
     };
 
     return (
         <div>
             <h2>Login</h2>
-
+            {error && (
+                <p style={{ color: "red" }}>
+                    {error}
+                </p>
+            )}
             <form onSubmit={handleSubmit}>
                 <div>
                     <label>Email</label>

@@ -40,16 +40,29 @@ const router = express.Router();
  *         description: Invalid credentials
  */
 
-router.post('/login',  passport.authenticate('local'),
-  (req, res) => {
-    const { id, email } = req.user;
+router.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) return next(err);
 
-    res.json({
-      message: 'Login successful',
-      user: { id, email }
+    if (!user) {
+      return res.status(401).json({
+        message: info?.message || "Invalid credentials"
+      });
+    }
+
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+
+      return res.json({
+        message: "Login successful",
+        user: {
+          id: user.id,
+          email: user.email
+        }
+      });
     });
-  }
-);
+  })(req, res, next);
+});
 
 /**
  * @swagger
@@ -281,15 +294,5 @@ router.get("/me", (req, res) => {
  */
 
 router.get('/:id', userController.getUserById);
-
-router.get("/me", (req, res) => {
-  if (!req.user) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
-
-  const { id, email } = req.user;
-
-  res.json({ id, email });
-});
 
 module.exports = router;

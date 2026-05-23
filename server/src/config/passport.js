@@ -13,7 +13,7 @@ passport.use(new LocalStrategy(
       );
 
       if (result.rows.length === 0) {
-        return done(null, false, { message: 'Incorrect email' });
+        return done(null, false, { message: 'Incorrect Email Address or Password.' });
       }
 
       const user = result.rows[0];
@@ -21,7 +21,7 @@ passport.use(new LocalStrategy(
       const match = await bcrypt.compare(password, user.password_hash);
 
       if (!match) {
-        return done(null, false, { message: 'Incorrect password' });
+        return done(null, false, { message: 'Incorrect Email Address or Password.' });
       }
 
       return done(null, user);
