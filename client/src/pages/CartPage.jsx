@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-import "../styles/cart.css";
-
-const CART_KEY = "cart";
+import { updateQuantity, removeFromCart } from "../api/localCart";
 
 function getCart() {
-  return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+  return JSON.parse(localStorage.getItem("cart")) || [];
 }
 
 function CartPage() {
@@ -14,9 +12,28 @@ function CartPage() {
     setCart(getCart());
   }, []);
 
+  const refreshCart = () => {
+    setCart(getCart());
+  };
+
+  const handleIncrease = (item) => {
+    updateQuantity(item.id, item.quantity + 1);
+    refreshCart();
+  };
+
+  const handleDecrease = (item) => {
+    updateQuantity(item.id, item.quantity - 1);
+    refreshCart();
+  };
+
+  const handleRemove = (item) => {
+    removeFromCart(item.id);
+    refreshCart();
+  };
+
   const total = cart.reduce((sum, item) => {
-    return sum + item.price * item.quantity;
-  }, 0);
+  return sum + item.price * item.quantity;
+}, 0);
 
   if (cart.length === 0) {
     return <h2>Your cart is empty</h2>;
@@ -30,8 +47,18 @@ function CartPage() {
         <div key={item.id} className="cart-item">
           <h3>{item.name}</h3>
           <p>Price: ${item.price}</p>
-          <p>Quantity: {item.quantity}</p>
-          <p>Subtotal: ${item.price * item.quantity}</p>
+
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <button onClick={() => handleDecrease(item)}>-</button>
+            <span>{item.quantity}</span>
+            <button onClick={() => handleIncrease(item)}>+</button>
+          </div>
+
+          <p>Subtotal: ${(item.price * item.quantity).toFixed(2)}</p>
+
+          <button onClick={() => handleRemove(item)}>
+            Remove
+          </button>
         </div>
       ))}
 

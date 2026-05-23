@@ -12,6 +12,28 @@ export function getCartItemCount() {
   }, 0);
 }
 
+export function updateQuantity(productId, quantity) {
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  cart = cart.map((item) =>
+    item.id === productId
+      ? { ...item, quantity: Math.max(1, quantity) }
+      : item
+  );
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  return cart;
+}
+
+export function removeFromCart(productId) {
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  cart = cart.filter((item) => item.id !== productId);
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  return cart;
+}
+
 export function addToCart(product) {
   const cart = getCart();
 
