@@ -1,6 +1,7 @@
-const app = require('./app');
-const pool = require('../../database');
 require('dotenv').config();
+const app = require('./app');
+const pool = require('../../database/connection');
+
 
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
