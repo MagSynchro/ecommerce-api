@@ -53,6 +53,51 @@ router.post('/login',  passport.authenticate('local'),
 
 /**
  * @swagger
+ * /users/logout:
+ *   post:
+ *     summary: Logout current user
+ *     tags:
+ *       - Users
+ *     description: Destroys the current session and clears the authentication cookie.
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Logged out successfully
+ *       500:
+ *         description: Logout failed due to server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Logout failed
+ */
+
+router.post("/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ message: "Logout failed" });
+    }
+
+    req.session.destroy(() => {
+      res.clearCookie("connect.sid");
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+});
+
+
+/**
+ * @swagger
  * /users/register:
  *   post:
  *     summary: Register a new user
