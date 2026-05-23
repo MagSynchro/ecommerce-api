@@ -1,5 +1,6 @@
 const app = require('./app');
 const pool = require('./db');
+require('dotenv').config();
 
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
@@ -9,7 +10,7 @@ pool.query('SELECT NOW()', (err, res) => {
   }
 });
 
-const PORT = 3000;
+const PORT = process.env.SERVER_PORT;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
