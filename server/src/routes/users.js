@@ -168,6 +168,50 @@ router.get('/', userController.getAllUsers);
 
 /**
  * @swagger
+ * /users/me:
+ *   get:
+ *     summary: Get currently authenticated user
+ *     tags:
+ *       - Users
+ *     description: Returns the user associated with the current session. Requires authentication via session cookie.
+ *     responses:
+ *       200:
+ *         description: Authenticated user returned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 1
+ *                 email:
+ *                   type: string
+ *                   example: user@example.com
+ *       401:
+ *         description: Not authenticated (no valid session)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Not authenticated
+ */
+
+router.get("/me", (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  const { id, email } = req.user;
+
+  res.json({ id, email });
+});
+
+/**
+ * @swagger
  * /users/{id}:
  *   get:
  *     summary: Get user by ID
@@ -192,5 +236,15 @@ router.get('/', userController.getAllUsers);
  */
 
 router.get('/:id', userController.getUserById);
+
+router.get("/me", (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  const { id, email } = req.user;
+
+  res.json({ id, email });
+});
 
 module.exports = router;
