@@ -24,10 +24,9 @@ function Layout() {
 
         <nav style={{ display: "flex", gap: "10px" }}>
           <Link to="/">Products</Link>
-
-          <Link to="/cart">
-            Cart ({cartCount})
-          </Link>
+          <Link to="/cart">Cart ({cartCount})</Link>
+          <Link to="/login">Login</Link>
+          <Link to="/register">Register</Link>
         </nav>
       </header>
 
