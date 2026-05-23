@@ -1,4 +1,4 @@
-const pool = require('../db');
+const pool = require('../../../database');
 
 exports.getAllProducts = async (req, res) => {
   const result = await pool.query('SELECT * FROM products');

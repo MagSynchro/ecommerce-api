@@ -1,5 +1,5 @@
 const app = require('./app');
-const pool = require('./db');
+const pool = require('../../database');
 require('dotenv').config();
 
 pool.query('SELECT NOW()', (err, res) => {

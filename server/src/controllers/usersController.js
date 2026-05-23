@@ -2,7 +2,7 @@
 //  res.status(201).json({message: 'User Login'});
 //});
 
-const pool = require('../db');
+const pool = require('../../../database');
 const bcrypt = require('bcryptjs');
 
 exports.getAllUsers = async (req, res) => {
