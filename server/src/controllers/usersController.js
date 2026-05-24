@@ -34,7 +34,20 @@ exports.createUser = async (req, res) => {
       [email, passwordHash]
     );
 
-    res.status(201).json(result.rows[0]);
+     const newUser = result.rows[0];
+
+    req.login(newUser, (err) => {
+      if (err) {
+        return res.status(500).json({ message: "Login after register failed" });
+      }
+
+      return res.status(201).json({
+        id: newUser.id,
+        email: newUser.email
+      });
+    });
+
+
   } catch (err) {
     if (err.code === '23505') {
       return res.status(400).json({ message: 'User already exists' });
@@ -48,7 +61,7 @@ exports.removeUser = async (req, res) => {
   const result = await pool.query(
     'DELETE FROM users WHERE id = $1 RETURNING *', [id]
   );
-  
+
   if (result.rows.length === 0) {
     return res.status(404).json({ message: 'User not found' });
   }
@@ -64,27 +77,27 @@ exports.updateUser = async (req, res) => {
     let passwordHash;
 
     if (password) {
-        const saltRounds = 10;
-        passwordHash = await bcrypt.hash(password, saltRounds);
+      const saltRounds = 10;
+      passwordHash = await bcrypt.hash(password, saltRounds);
     }
 
     const saltRounds = 10;
     passwordHash = await bcrypt.hash(password, saltRounds);
 
     const result = await pool.query(
-        `UPDATE users
+      `UPDATE users
         SET email = $1, password_hash = COALESCE($2, password_hash)
         WHERE id = $3
         RETURNING id, email`,
-        [email, passwordHash, id]
+      [email, passwordHash, id]
     );
 
     if (result.rows.length === 0) {
-        return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     res.json(result.rows[0]);
   } catch (err) {
-    res.status(500).json({ message: 'Server error'});
+    res.status(500).json({ message: 'Server error' });
   }
 };
