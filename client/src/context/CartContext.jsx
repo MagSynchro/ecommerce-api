@@ -24,25 +24,34 @@ export function CartProvider({ children }) {
   }, [cart]);
 
   const addToCart = (product, quantity = 1) => {
-      const normalizedProduct = {
+  const normalizedProduct = {
     ...product,
     price: Number(product.price),
   };
 
-    setCart((prev) => {
-      const existing = prev.find((i) => i.id === product.id);
+  setCart((prev) => {
+    const existing = prev.find((i) => i.id === product.id);
 
-      if (existing) {
-        return prev.map((i) =>
-          i.id === product.id
-            ? { ...i, quantity: i.quantity += quantity}
-            : i
-        );
-      }
+    if (existing) {
+      return prev.map((i) =>
+        i.id === product.id
+          ? {
+              ...i,
+              quantity: i.quantity + quantity,
+            }
+          : i
+      );
+    }
 
-      return [...prev, { ...normalizedProduct, quantity: 1 }];
-    });
-  };
+    return [
+      ...prev,
+      {
+        ...normalizedProduct,
+        quantity,
+      },
+    ];
+  });
+};
 
   const updateQuantity = (id, quantity) => {
     setCart((prev) =>
