@@ -1,66 +1,72 @@
 import { useCart } from "../context/CartContext";
+import { Link } from "react-router-dom";
 
 function CartPage() {
-  const { cart, updateQuantity, removeFromCart } = useCart();
+    const { cart, updateQuantity, removeFromCart } = useCart();
 
-  const total = cart.reduce((sum, item) => {
-    return sum + Number(item.price || 0) * item.quantity;
-  }, 0);
+    const total = cart.reduce((sum, item) => {
+        return sum + Number(item.price || 0) * item.quantity;
+    }, 0);
 
-  const handleDecrease = (item) => {
-    if (item.quantity === 1) {
-      const confirmRemove = window.confirm(
-        "Quantity is 1. Remove item from cart?"
-      );
+    const handleDecrease = (item) => {
+        if (item.quantity === 1) {
+            const confirmRemove = window.confirm(
+                "Quantity is 1. Remove item from cart?"
+            );
 
-      if (confirmRemove) {
-        removeFromCart(item.id);
-      }
-      return;
+            if (confirmRemove) {
+                removeFromCart(item.id);
+            }
+            return;
+        }
+
+        updateQuantity(item.id, item.quantity - 1);
+    };
+
+    const handleIncrease = (item) => {
+        updateQuantity(item.id, item.quantity + 1);
+    };
+
+    if (cart.length === 0) {
+        return <h2>Your cart is empty</h2>;
     }
 
-    updateQuantity(item.id, item.quantity - 1);
-  };
+    return (
+        <div className="cart-page">
+            <h2>Your Cart</h2>
 
-  const handleIncrease = (item) => {
-    updateQuantity(item.id, item.quantity + 1);
-  };
+            {cart.map((item) => (
+                <div key={item.id} className="cart-item">
+                    <h3>{item.name}</h3>
 
-  if (cart.length === 0) {
-    return <h2>Your cart is empty</h2>;
-  }
+                    <p>Price: ${Number(item.price || 0).toFixed(2)}</p>
 
-  return (
-    <div className="cart-page">
-      <h2>Your Cart</h2>
+                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                        <button onClick={() => handleDecrease(item)}>-</button>
+                        <span>{item.quantity}</span>
+                        <button onClick={() => handleIncrease(item)}>+</button>
+                    </div>
 
-      {cart.map((item) => (
-        <div key={item.id} className="cart-item">
-          <h3>{item.name}</h3>
+                    <p>
+                        Subtotal: ${(Number(item.price || 0) * item.quantity).toFixed(2)}
+                    </p>
 
-          <p>Price: ${Number(item.price || 0).toFixed(2)}</p>
+                    <button onClick={() => removeFromCart(item.id)}>
+                        Remove
+                    </button>
+                </div>
+            ))}
 
-          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <button onClick={() => handleDecrease(item)}>-</button>
-            <span>{item.quantity}</span>
-            <button onClick={() => handleIncrease(item)}>+</button>
-          </div>
+            <hr />
 
-          <p>
-            Subtotal: ${(Number(item.price || 0) * item.quantity).toFixed(2)}
-          </p>
-
-          <button onClick={() => removeFromCart(item.id)}>
-            Remove
-          </button>
+            <h3>Total: ${total.toFixed(2)}</h3>
+            <Link to="/checkout">
+                <button>
+                    Proceed to Checkout
+                </button>
+            </Link>
         </div>
-      ))}
-
-      <hr />
-
-      <h3>Total: ${total.toFixed(2)}</h3>
-    </div>
-  );
+    );
 }
 
 export default CartPage;
