@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { registerUser } from "../api/auth";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -7,6 +8,20 @@ function RegisterPage() {
         password: "",
         confirmPassword: "",
     });
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [confirmTouched, setConfirmTouched] = useState(false);
+
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const from = location.state?.from?.pathname || "/";
+
+    const passwordMismatch =
+        confirmTouched &&
+        formData.confirmPassword.length > 0 &&
+        formData.password !== formData.confirmPassword;
 
     const handleChange = (e) => {
         setFormData({
@@ -18,18 +33,40 @@ function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (passwordMismatch) {
+            setError("Please ensure passwords match");
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+
         try {
-            const data = await registerUser(formData);
+            const data = await registerUser({
+                email: formData.email,
+                password: formData.password,
+            });
 
             console.log("Registration success:", data);
+
+            navigate("/", { replace: true });
+
         } catch (err) {
-            console.error("Registration failed:", err.message);
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div>
             <h2>Create Account</h2>
+
+            {error && (
+                <p style={{ color: "red" }}>
+                    {error}
+                </p>
+            )}
 
             <form onSubmit={handleSubmit}>
                 <div>
@@ -58,12 +95,21 @@ function RegisterPage() {
                         type="password"
                         name="confirmPassword"
                         value={formData.confirmPassword}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            handleChange(e);
+                            setConfirmTouched(true);
+                        }}
                     />
+
+                    {passwordMismatch && (
+                        <p style={{ color: "red" }}>
+                            Passwords do not match
+                        </p>
+                    )}
                 </div>
 
-                <button type="submit">
-                    Create Account
+                <button type="submit" disabled={loading}>
+                    {loading ? "Creating..." : "Create Account"}
                 </button>
             </form>
         </div>
