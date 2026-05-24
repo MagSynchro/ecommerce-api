@@ -15,16 +15,16 @@ function CartPage() {
             );
 
             if (confirmRemove) {
-                removeFromCart(item.id);
+                removeFromCart(item.product_id || item.id);
             }
             return;
         }
 
-        updateQuantity(item.id, item.quantity - 1);
+        updateQuantity(item.product_id || item.id, item.quantity - 1);
     };
 
     const handleIncrease = (item) => {
-        updateQuantity(item.id, item.quantity + 1);
+        updateQuantity(item.product_id || item.id, item.quantity + 1);
     };
 
     if (cart.length === 0) {
@@ -51,7 +51,7 @@ function CartPage() {
                         Subtotal: ${(Number(item.price || 0) * item.quantity).toFixed(2)}
                     </p>
 
-                    <button onClick={() => removeFromCart(item.id)}>
+                    <button onClick={() => removeFromCart(item.product_id || item.id)}>
                         Remove
                     </button>
                 </div>

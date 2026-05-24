@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
         // Trigger cart merge ONLY on login transition
         if (justLoggedIn && !mergeInProgress.current) {
             mergeInProgress.current = true;
-
+            console.log("Login detected - merging cart...");
             mergeCart()
                 .catch((err) => {
                     console.error("Cart merge failed:", err);
@@ -72,23 +72,29 @@ export function AuthProvider({ children }) {
 
         // Nothing to merge
         if (!localCart.length) return;
-
-        // Fetch server cart
+        
+        // Fetch DB cart    
         const dbCart = await request("/cart");
 
-        // Map ensures no duplicates per product
+        // Map keyed by PRODUCT ID
         const map = new Map();
 
-        // Step 1: load DB cart into map
+        // ------------------------------------------------
+        // Step 1: Load DB cart into map
+        // ------------------------------------------------
         dbCart.forEach(item => {
-            map.set(item.id, {
-                product_id: item.id,
+            map.set(item.product_id, {
+                product_id: item.product_id,
                 quantity: item.quantity
             });
         });
 
-        // Step 2: merge local cart into map
+        // ------------------------------------------------
+        // Step 2: Merge local cart into map
+        // ------------------------------------------------
         localCart.forEach(item => {
+
+            // localStorage cart uses item.id as product id
             const existing = map.get(item.id);
 
             if (existing) {
@@ -101,7 +107,9 @@ export function AuthProvider({ children }) {
             }
         });
 
-        // Step 3: sync merged result to backend (upsert-safe endpoint)
+        // ------------------------------------------------
+        // Step 3: Sync merged cart to backend
+        // ------------------------------------------------
         for (const item of map.values()) {
             await request("/cart", {
                 method: "POST",
@@ -109,7 +117,9 @@ export function AuthProvider({ children }) {
             });
         }
 
-        // Step 4: clear local cart after successful merge
+        // ------------------------------------------------
+        // Step 4: Clear local cart AFTER successful merge
+        // ------------------------------------------------
         clearCart();
     };
 
