@@ -103,3 +103,9 @@
     width: 80px;
     margin-left: 10px;
 }
+
+.cart-status {
+  color: green;
+  font-weight: bold;
+  margin: 10px 0;
+}

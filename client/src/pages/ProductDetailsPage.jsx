@@ -7,85 +7,94 @@ import { useCart } from "../context/CartContext";
 import "../styles/products.css";
 
 function ProductDetailsPage() {
-  const { id } = useParams();
+    const { id } = useParams();
 
-  const [product, setProduct] = useState(null);
-  const [error, setError] = useState(null);
-  const [quantity, setQuantity] = useState(1);
-  const [cartMessage, setCartMessage] = useState("");
+    const [product, setProduct] = useState(null);
+    const [error, setError] = useState(null);
+    const [quantity, setQuantity] = useState(1);
+    const [cartMessage, setCartMessage] = useState("");
 
-  const { addToCart } = useCart();
+    const { cart, addToCart } = useCart();
+    
+    useEffect(() => {
+        getProductById(id)
+            .then(setProduct)
+            .catch(setError);
+    }, [id]);
 
-  useEffect(() => {
-    getProductById(id)
-      .then(setProduct)
-      .catch(setError);
-  }, [id]);
+    const handleAddToCart = () => {
+        addToCart(product, quantity);
 
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
+        setCartMessage(
+            `${quantity} ${product.name} added to cart`
+        );
 
-    setCartMessage(
-      `${quantity} ${product.name} added to cart`
+        setTimeout(() => {
+            setCartMessage("");
+        }, 1500);
+    };
+
+    if (error) {
+        return <p>Error: {error.message}</p>;
+    }
+
+    if (!product) {
+        return <p>Loading...</p>;
+    }
+
+    const cartItem = cart.find(
+        (item) => item.id === product?.id
     );
 
-    setTimeout(() => {
-      setCartMessage("");
-    }, 1500);
-  };
+    return (
+        <div className="product-details-page">
+            {cartMessage && (
+                <div className="cart-toast">
+                    {cartMessage}
+                </div>
+            )}
 
-  if (error) {
-    return <p>Error: {error.message}</p>;
-  }
+            <img
+                src={product.image_url}
+                alt={product.name}
+                className="details-image"
+            />
 
-  if (!product) {
-    return <p>Loading...</p>;
-  }
+            <div className="details-content">
+                <h2>{product.name}</h2>
 
-  return (
-    <div className="product-details-page">
-      {cartMessage && (
-        <div className="cart-toast">
-          {cartMessage}
+                <h3>
+                    ${Number(product.price).toFixed(2)}
+                </h3>
+
+                <p>{product.description}</p>
+                {cartItem && (
+  <p className="cart-status">
+    Already in cart: {cartItem.quantity}
+  </p>
+)}
+
+                <div className="quantity-controls">
+                    <label>
+                        Quantity:
+                    </label>
+
+                    <input
+                        type="number"
+                        min="1"
+                        value={quantity}
+                        onChange={(e) =>
+                            setQuantity(Number(e.target.value))
+                        }
+                    />
+                </div>
+
+                <button onClick={handleAddToCart}>
+                    Add to Cart
+                </button>
+            </div>
         </div>
-      )}
-
-      <img
-        src={product.image_url}
-        alt={product.name}
-        className="details-image"
-      />
-
-      <div className="details-content">
-        <h2>{product.name}</h2>
-
-        <h3>
-          ${Number(product.price).toFixed(2)}
-        </h3>
-
-        <p>{product.description}</p>
-
-        <div className="quantity-controls">
-          <label>
-            Quantity:
-          </label>
-
-          <input
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={(e) =>
-              setQuantity(Number(e.target.value))
-            }
-          />
-        </div>
-
-        <button onClick={handleAddToCart}>
-          Add to Cart
-        </button>
-      </div>
-    </div>
-  );
+    );
 }
 
 export default ProductDetailsPage;
