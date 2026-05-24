@@ -23,7 +23,7 @@ export function CartProvider({ children }) {
     saveCart(cart);
   }, [cart]);
 
-  const addToCart = (product) => {
+  const addToCart = (product, quantity = 1) => {
       const normalizedProduct = {
     ...product,
     price: Number(product.price),
@@ -35,7 +35,7 @@ export function CartProvider({ children }) {
       if (existing) {
         return prev.map((i) =>
           i.id === product.id
-            ? { ...i, quantity: i.quantity + 1 }
+            ? { ...i, quantity: i.quantity += quantity}
             : i
         );
       }

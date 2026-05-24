@@ -1,81 +1,105 @@
 .products-page {
-  padding: 20px;
+    padding: 20px;
 }
 
 .products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .product-card {
-  border: 1px solid #ddd;
-  padding: 12px;
-  border-radius: 8px;
-  background: #fff;
+    border: 1px solid #ddd;
+    padding: 12px;
+    border-radius: 8px;
+    background: #fff;
 }
 
 .product-card h3 {
-  margin: 0 0 8px 0;
+    margin: 0 0 8px 0;
 }
 
 .price {
-  font-weight: bold;
-  color: green;
+    font-weight: bold;
+    color: green;
 }
 
 .description {
-  font-size: 0.9rem;
-  color: #555;
+    font-size: 0.9rem;
+    color: #555;
 }
 
 .product-card button {
-  margin-top: 10px;
-  padding: 6px 10px;
-  cursor: pointer;
+    margin-top: 10px;
+    padding: 6px 10px;
+    cursor: pointer;
 }
 
 .cart-message {
-  margin: 10px 0;
-  color: green;
-  font-weight: bold;
+    margin: 10px 0;
+    color: green;
+    font-weight: bold;
 }
 
 .products-header {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
 .cart-toast {
-  position: fixed;
-  background: #222;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 14px;
+    position: fixed;
+    background: #222;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
 
-  pointer-events: none;
-  opacity: 0.95;
+    pointer-events: none;
+    opacity: 0.95;
 
-  z-index: 9999;
+    z-index: 9999;
 }
 
 .product-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 8px;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
 }
 
 .product-link {
-  text-decoration: none;
-  color: inherit;
+    text-decoration: none;
+    color: inherit;
 }
 
 .short-description {
-  color: #666;
+    color: #666;
+}
+
+.product-details-page {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.details-image {
+    width: 300px;
+    border-radius: 10px;
+}
+
+.details-content {
+    max-width: 600px;
+}
+
+.quantity-controls {
+    margin: 20px 0;
+}
+
+.quantity-controls input {
+    width: 80px;
+    margin-left: 10px;
 }
