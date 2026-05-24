@@ -427,7 +427,7 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Cart item not found' });
     }
 
-    res.sendStatus(204);
+    res.status(200).json({ success: true });
 
   } catch (err) {
     console.error(err);
