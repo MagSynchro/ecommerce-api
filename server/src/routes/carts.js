@@ -155,6 +155,180 @@ router.post('/', async (req, res) => {
   }
 });
 
+ /**
+  * @swagger
+  * /cart/sync:
+  *   post:
+  *     summary: Sync guest cart with authenticated user cart
+  *     description: >
+  *       Merges a guest (local storage) cart into the authenticated user's database cart.
+  *       Matching items (by product_id) will have their quantities summed.
+  *       Non-existing items will be inserted.
+  *
+  *       This endpoint is idempotent and returns the final authoritative cart state.
+  *
+  *     tags:
+  *       - Cart
+  *
+  *     security:
+  *       - bearerAuth: []
+  *
+  *     requestBody:
+  *       required: true
+  *       content:
+  *         application/json:
+  *           schema:
+  *             type: object
+  *             required:
+  *               - items
+  *             properties:
+  *               items:
+  *                 type: array
+  *                 description: Guest cart items to merge into user cart
+  *                 items:
+  *                   type: object
+  *                   required:
+  *                     - product_id
+  *                     - quantity
+  *                   properties:
+  *                     product_id:
+  *                       type: integer
+  *                       example: 1
+  *                     quantity:
+  *                       type: integer
+  *                       example: 3
+  *
+  *     responses:
+  *       200:
+  *         description: Cart successfully merged and returned
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: array
+  *               items:
+  *                 type: object
+  *                 properties:
+  *                   cart_item_id:
+  *                     type: integer
+  *                     example: 10
+  *                   product_id:
+  *                     type: integer
+  *                     example: 1
+  *                   name:
+  *                     type: string
+  *                     example: Laptop
+  *                   price:
+  *                     type: number
+  *                     example: 999.99
+  *                   quantity:
+  *                     type: integer
+  *                     example: 4
+  *
+  *       400:
+  *         description: Invalid request payload
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message:
+  *                   type: string
+  *                   example: Invalid cart items payload
+  *
+  *       401:
+  *         description: Unauthorized
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message:
+  *                   type: string
+  *                   example: Unauthorized
+  *
+  *       500:
+  *         description: Server error during cart sync
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 message:
+  *                   type: string
+  *                   example: Cart sync failed
+  */
+
+router.post("/sync", async (req, res) => {
+  try {
+    console.log("Syncing cart for user:", req.user.id, req.body.items);
+    const userId = req.user.id;
+    const guestItems = req.body.items || [];
+
+    if (!Array.isArray(guestItems) || guestItems.length === 0) {
+      return res.status(200).json({ message: "Nothing to sync" });
+    }
+
+    // Step 1: fetch current DB cart
+    const dbResult = await pool.query(
+      `SELECT product_id, quantity FROM cart_items WHERE user_id = $1`,
+      [userId]
+    );
+
+    const dbCart = dbResult.rows;
+
+    // Step 2: build map of existing cart
+    const map = new Map();
+
+    for (const item of dbCart) {
+      map.set(item.product_id, item.quantity);
+    }
+
+    // Step 3: merge guest cart into DB map
+    for (const item of guestItems) {
+      const current = map.get(item.product_id) || 0;
+      map.set(item.product_id, current + item.quantity);
+    }
+
+    // Step 4: UPSERT final result (single source of truth)
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      for (const [productId, quantity] of map.entries()) {
+        await client.query(
+          `
+          INSERT INTO cart_items (user_id, product_id, quantity)
+          VALUES ($1, $2, $3)
+          ON CONFLICT (user_id, product_id)
+          DO UPDATE SET quantity = EXCLUDED.quantity
+          `,
+          [userId, productId, quantity]
+        );
+      }
+
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+    }
+
+    // Step 5: return final authoritative cart
+    const finalCart = await pool.query(
+      `SELECT * FROM cart_items WHERE user_id = $1`,
+      [userId]
+    );
+
+    res.json(finalCart.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Cart sync failed" });
+  }
+});
+
+
 /**
  * @swagger
  * /cart/{id}:

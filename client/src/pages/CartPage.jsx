@@ -15,16 +15,16 @@ function CartPage() {
             );
 
             if (confirmRemove) {
-                removeFromCart(item.product_id || item.id);
+                removeFromCart(item.id);
             }
             return;
         }
 
-        updateQuantity(item.product_id || item.id, item.quantity - 1);
+        updateQuantity(item.id, item.quantity - 1);
     };
 
     const handleIncrease = (item) => {
-        updateQuantity(item.product_id || item.id, item.quantity + 1);
+        updateQuantity(item.id, item.quantity + 1);
     };
 
     if (cart.length === 0) {
@@ -51,7 +51,7 @@ function CartPage() {
                         Subtotal: ${(Number(item.price || 0) * item.quantity).toFixed(2)}
                     </p>
 
-                    <button onClick={() => removeFromCart(item.product_id || item.id)}>
+                    <button onClick={() => removeFromCart(item.id)}>
                         Remove
                     </button>
                 </div>
@@ -60,6 +60,7 @@ function CartPage() {
             <hr />
 
             <h3>Total: ${total.toFixed(2)}</h3>
+
             <Link to="/checkout">
                 <button>
                     Proceed to Checkout

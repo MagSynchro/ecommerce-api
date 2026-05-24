@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { useAuth } from "./AuthContext";
 import request from "../api/client";
 
@@ -6,6 +6,9 @@ const CartContext = createContext();
 
 const CART_KEY = "cart";
 
+/* ---------------------------------------
+   LOCAL STORAGE HELPERS (GUEST ONLY)
+--------------------------------------- */
 function getStoredCart() {
   return JSON.parse(localStorage.getItem(CART_KEY)) || [];
 }
@@ -14,57 +17,135 @@ function saveCart(cart) {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
 }
 
+function clearStoredCart() {
+  localStorage.removeItem(CART_KEY);
+}
+
+/* ---------------------------------------
+   NORMALIZE DB CART
+--------------------------------------- */
+function normalizeDbCart(data) {
+  return data.map(item => ({
+    id: item.cart_item_id,
+    product_id: item.product_id,
+    name: item.name,
+    price: Number(item.price),
+    quantity: item.quantity
+  }));
+}
+
+/* ---------------------------------------
+   CONTEXT
+--------------------------------------- */
 export function CartProvider({ children }) {
-  const [cart, setCart] = useState([]);
   const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    const loadCart = async () => {
-      // Logged in users use DB cart
-      if (isAuthenticated) {
-        try {
-          const data = await request("/cart");
-          setCart(data);
-        } catch (err) {
-          console.error("Failed to load DB cart:", err);
-        }
-      } else {
-        // Guests use local cart
-        setCart(getStoredCart());
-      }
-    };
+  const [cart, setCart] = useState([]);
+  const [mode, setMode] = useState("GUEST");
 
-    loadCart();
-  }, [isAuthenticated]);
+  // prevents double-sync in React Strict Mode
+  const syncLock = useRef(false);
 
-  useEffect(() => {
+  const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
+
+ /* ---------------------------------------
+   LOAD CART WHEN AUTH CHANGES
+--------------------------------------- */
+useEffect(() => {
+  const loadCart = async () => {
+    // -----------------------------
+    // GUEST MODE
+    // -----------------------------
     if (!isAuthenticated) {
+      setMode("GUEST");
+      setCart(getStoredCart());
+      syncLock.current = false; // reset for next login cycle
+      return;
+    }
+
+    // -----------------------------
+    // AUTH MODE → RUN SYNC ONCE
+    // -----------------------------
+    if (syncLock.current) return;
+    syncLock.current = true;
+
+    const guestSnapshot = getStoredCart(); // 🔥 FREEZE ONCE (CRITICAL)
+
+    console.log("🟡 Guest snapshot at login:", guestSnapshot);
+
+    try {
+      setMode("SYNCING");
+
+      // -----------------------------
+      // Send frozen snapshot ONLY
+      // -----------------------------
+      await request("/cart/sync", {
+        method: "POST",
+        body: {
+          items: guestSnapshot
+        }
+      });
+
+      // -----------------------------
+      // Clear guest cart AFTER sync
+      // -----------------------------
+      clearStoredCart();
+
+      // -----------------------------
+      // Reload authoritative DB cart
+      // -----------------------------
+      const dbCart = await request("/cart");
+      const normalized = normalizeDbCart(dbCart);
+
+      setCart(normalized);
+
+      console.log("🟢 Sync complete. Final DB cart:", normalized);
+
+      setMode("AUTH");
+    } catch (err) {
+      console.error("Cart sync failed:", err);
+      setMode("AUTH");
+    }
+  };
+
+  loadCart();
+}, [isAuthenticated]);
+
+  /* ---------------------------------------
+     SAVE GUEST CART ONLY
+  --------------------------------------- */
+  useEffect(() => {
+    if (mode === "GUEST") {
       saveCart(cart);
     }
-  }, [cart, isAuthenticated]);
+  }, [cart, mode]);
 
-  useEffect(() => {
-    console.log("LOCAL CART:", cart);
-  }, [cart]);
+  /* ---------------------------------------
+     CART ACTIONS
+  --------------------------------------- */
 
-  const addToCart = (product, quantity = 1) => {
-    const normalizedProduct = {
-      ...product,
-      price: Number(product.price),
-    };
+  const addToCart = async (product, quantity = 1) => {
+    if (mode === "AUTH") {
+      await request("/cart", {
+        method: "POST",
+        body: {
+          product_id: product.id,
+          quantity
+        }
+      });
 
-    setCart((prev) => {
-      const existing = prev.find(
-        (i) => (i.product_id || i.id) === product.id
-      );
+      const data = await request("/cart");
+      setCart(normalizeDbCart(data));
+      return;
+    }
+
+    setCart(prev => {
+      const existing = prev.find(i => i.id === product.id);
 
       if (existing) {
-        return prev.map((i) =>
-          (i.product_id || i.id) === product.id
-            ? {
-              ...i,
-              quantity: i.quantity + quantity,
-            }
+        return prev.map(i =>
+          i.id === product.id
+            ? { ...i, quantity: i.quantity + quantity }
             : i
         );
       }
@@ -72,39 +153,78 @@ export function CartProvider({ children }) {
       return [
         ...prev,
         {
-          ...normalizedProduct,
-          quantity,
-        },
+          id: product.id,
+          product_id: product.id,
+          name: product.name,
+          price: Number(product.price),
+          quantity
+        }
       ];
     });
   };
 
-  const updateQuantity = (id, quantity) => {
-    setCart((prev) =>
-      prev.map((item) =>
+  const updateQuantity = async (id, quantity) => {
+    if (!id) return;
+
+    if (mode === "AUTH") {
+      await request(`/cart/${id}`, {
+        method: "PUT",
+        body: { quantity }
+      });
+
+      const data = await request("/cart");
+      setCart(normalizeDbCart(data));
+      return;
+    }
+
+    setCart(prev =>
+      prev.map(item =>
         item.id === id ? { ...item, quantity } : item
       )
     );
   };
 
-  const removeFromCart = (id) => {
-    setCart((prev) =>
-      prev.filter(
-        (item) =>
-          (item.product_id || item.id) !== id
-      )
-    );
+  const removeFromCart = async (id) => {
+    if (!id) return;
+
+    if (mode === "AUTH") {
+      await request(`/cart/${id}`, {
+        method: "DELETE"
+      });
+
+      const data = await request("/cart");
+      setCart(normalizeDbCart(data));
+      return;
+    }
+
+    setCart(prev => prev.filter(item => item.id !== id));
   };
 
-  const value = {
-    cart,
-    addToCart,
-    updateQuantity,
-    removeFromCart,
+  /* ---------------------------------------
+     LOGOUT RESET
+  --------------------------------------- */
+  const resetCart = () => {
+    setCart([]);
+    clearStoredCart();
+    setMode("GUEST");
+    syncLock.current = false;
   };
 
+  /* ---------------------------------------
+     PROVIDER
+  --------------------------------------- */
   return (
-    <CartContext.Provider value={value}>
+    <CartContext.Provider
+      value={{
+        cart,
+        cartCount,
+        mode,
+        addToCart,
+        updateQuantity,
+        removeFromCart,
+        resetCart
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

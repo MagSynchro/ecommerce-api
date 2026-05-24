@@ -1,23 +1,18 @@
-import { useEffect, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { getCartItemCount } from "../api/localCart";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
 function Layout() {
-  const [cartCount, setCartCount] = useState(0);
   const { user, isAuthenticated, logout } = useAuth();
+  const { cart } = useCart();
 
-  useEffect(() => {
-    const updateCart = () => {
-      setCartCount(getCartItemCount());
-    };
-
-    updateCart();
-
-    const interval = setInterval(updateCart, 500);
-
-    return () => clearInterval(interval);
-  }, []);
+  // -----------------------------
+  // DERIVE BADGE FROM SINGLE SOURCE OF TRUTH
+  // -----------------------------
+  const cartCount = cart.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
 
   return (
     <div>
@@ -26,6 +21,8 @@ function Layout() {
 
         <nav style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <Link to="/">Products</Link>
+
+          {/* CART BADGE NOW REACTIVE */}
           <Link to="/cart">Cart ({cartCount})</Link>
 
           {isAuthenticated ? (
