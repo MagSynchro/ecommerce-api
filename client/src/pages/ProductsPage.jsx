@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getProducts } from "../api/products";
 import { useCart } from "../context/CartContext";
+import { Link } from "react-router-dom";
 
 import "../styles/products.css";
 
@@ -46,9 +47,26 @@ function ProductsPage() {
             <div className="products-grid">
                 {products.map((p) => (
                     <div key={p.id} className="product-card">
-                        <h3>{p.name}</h3>
-                        <p className="price">${p.price}</p>
-                        <p className="description">{p.description}</p>
+                        <Link
+                            to={`/products/${p.id}`}
+                            className="product-link"
+                        >
+                            <img
+                                src={p.image_url}
+                                alt={p.name}
+                                className="product-image"
+                            />
+
+                            <h3>{p.name}</h3>
+
+                            <p className="price">
+                                ${Number(p.price).toFixed(2)}
+                            </p>
+
+                            <p className="short-description">
+                                {p.short_description}
+                            </p>
+                        </Link>
 
                         <button
                             onClick={(e) => {
