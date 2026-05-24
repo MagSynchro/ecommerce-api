@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { registerUser } from "../api/auth";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -15,8 +16,9 @@ function RegisterPage() {
 
     const location = useLocation();
     const navigate = useNavigate();
-
     const from = location.state?.from?.pathname || "/";
+
+    const { refreshUser } = useAuth();
 
     const passwordMismatch =
         confirmTouched &&
@@ -48,7 +50,7 @@ function RegisterPage() {
             });
 
             console.log("Registration success:", data);
-
+            await refreshUser();
             navigate("/", { replace: true });
 
         } catch (err) {

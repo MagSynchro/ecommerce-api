@@ -8,11 +8,14 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // -----------------------------
+    // INITIAL SESSION RESTORE
+    // -----------------------------
     useEffect(() => {
-        const restoreSession = async () => {
+        const initAuth = async () => {
             try {
                 const data = await request("/users/me");
-                setUser(data);
+                setUser(data); // ALWAYS { id, email }
             } catch {
                 setUser(null);
             } finally {
@@ -20,26 +23,51 @@ export function AuthProvider({ children }) {
             }
         };
 
-        restoreSession();
+        initAuth();
     }, []);
 
+    // -----------------------------
+    // LOGIN
+    // -----------------------------
     const login = async (credentials) => {
         const data = await loginUser(credentials);
-        setUser(data.user);
+        setUser(data.user); // normalize shape
         return data;
     };
 
-    const logout = async () => {
-        await request("/users/logout", { method: "POST" }).catch(() => { });
-        setUser(null);
+    // -----------------------------
+    // REFRESH USER (source of truth)
+    // -----------------------------
+    const refreshUser = async () => {
+        try {
+            const data = await request("/users/me");
+            setUser(data); // ALWAYS flat user object
+        } catch {
+            setUser(null);
+        }
     };
 
+    // -----------------------------
+    // LOGOUT
+    // -----------------------------
+    const logout = async () => {
+        try {
+            await request("/users/logout", { method: "POST" });
+        } finally {
+            setUser(null);
+        }
+    };
+
+    // -----------------------------
+    // CONTEXT VALUE
+    // -----------------------------
     const value = {
         user,
         loading,
         isAuthenticated: !!user,
-        login,
+        login,        
         logout,
+        refreshUser,
     };
 
     return (
