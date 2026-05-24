@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
 import { getProductById } from "../api/products";
 import { useCart } from "../context/CartContext";
 
@@ -15,7 +14,7 @@ function ProductDetailsPage() {
     const [cartMessage, setCartMessage] = useState("");
 
     const { cart, addToCart } = useCart();
-    
+
     useEffect(() => {
         getProductById(id)
             .then(setProduct)
@@ -42,9 +41,8 @@ function ProductDetailsPage() {
         return <p>Loading...</p>;
     }
 
-    const cartItem = cart.find(
-        (item) => item.id === product?.id
-    );
+    const cartItem = cart.find(item => item.id === product?.id);
+    const quantityInCart = cartItem?.quantity || 0;
 
     return (
         <div className="product-details-page">
@@ -68,12 +66,7 @@ function ProductDetailsPage() {
                 </h3>
 
                 <p>{product.description}</p>
-                {cartItem && (
-  <p className="cart-status">
-    Already in cart: {cartItem.quantity}
-  </p>
-)}
-
+               
                 <div className="quantity-controls">
                     <label>
                         Quantity:
@@ -92,6 +85,11 @@ function ProductDetailsPage() {
                 <button onClick={handleAddToCart}>
                     Add to Cart
                 </button>
+                 {quantityInCart > 0 ? (
+                    <p>In cart: {quantityInCart}</p>
+                ) : (
+                    <p>In cart: 0</p>
+                )}
             </div>
         </div>
     );
