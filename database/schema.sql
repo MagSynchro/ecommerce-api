@@ -13,7 +13,9 @@ CREATE TABLE products (
 id SERIAL PRIMARY KEY,
 name VARCHAR(255) UNIQUE NOT NULL,
 price DECIMAL(10,2) NOT NULL,
-description TEXT
+description TEXT,
+short_description TEXT,
+image_url TEXT
 );
 CREATE TABLE cart_items (
 id SERIAL PRIMARY KEY,
