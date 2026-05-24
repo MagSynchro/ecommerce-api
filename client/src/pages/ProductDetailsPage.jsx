@@ -27,6 +27,7 @@ function ProductDetailsPage() {
         setCartMessage(
             `${quantity} ${product.name} added to cart`
         );
+        setQuantity(1);
 
         setTimeout(() => {
             setCartMessage("");
