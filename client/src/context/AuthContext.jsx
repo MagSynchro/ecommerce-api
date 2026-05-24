@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { loginUser } from "../api/auth";
 import request from "../api/client";
 
@@ -7,6 +7,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const prevUserRef = useRef(null);
 
     // -----------------------------
     // INITIAL SESSION RESTORE
@@ -25,6 +26,21 @@ export function AuthProvider({ children }) {
 
         initAuth();
     }, []);
+
+    useEffect(() => {
+    const prevUser = prevUserRef.current;
+    const currentUser = user;
+
+    const wasLoggedOut = !prevUser;
+    const isLoggedIn = !!currentUser;
+
+    if (wasLoggedOut && isLoggedIn) {
+        console.log("Cart merge trigger (login detected)");
+        // mergeCart() will go here later
+    }
+
+    prevUserRef.current = currentUser;
+}, [user]);
 
     // -----------------------------
     // LOGIN
