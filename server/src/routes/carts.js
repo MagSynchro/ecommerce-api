@@ -64,13 +64,15 @@ router.get('/', async (req, res) => {
   }
   });
 
-/**
+ /**
  * @swagger
  * /cart:
  *   post:
- *     summary: Add product to cart
+ *     summary: Add product to cart (increments quantity if item already exists)
  *     tags:
  *       - Cart
+ *     security:
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -83,11 +85,15 @@ router.get('/', async (req, res) => {
  *             properties:
  *               product_id:
  *                 type: integer
+ *                 description: ID of the product to add to the cart
+ *                 example: 1
  *               quantity:
  *                 type: integer
+ *                 description: Quantity to add (will be added to existing quantity if item already exists)
+ *                 example: 2
  *     responses:
- *       201:
- *         description: Item added to cart
+ *       200:
+ *         description: Item already existed and quantity was updated
  *         content:
  *           application/json:
  *             schema:
@@ -101,8 +107,27 @@ router.get('/', async (req, res) => {
  *                   type: integer
  *                 quantity:
  *                   type: integer
+ *                   description: Updated total quantity in cart
+ *       201:
+ *         description: New item added to cart
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 user_id:
+ *                   type: integer
+ *                 product_id:
+ *                   type: integer
+ *                 quantity:
+ *                   type: integer
+ *                   description: Quantity of newly created cart item
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized - user must be logged in
+ *       500:
+ *         description: Server error
  */
 
 router.post('/', async (req, res) => {
@@ -110,6 +135,26 @@ router.post('/', async (req, res) => {
     const userId = req.user.id;
     const { product_id, quantity } = req.body;
 
+    // check if item already exists
+    const existing = await pool.query(
+      `SELECT * FROM cart_items
+       WHERE user_id = $1 AND product_id = $2`,
+      [userId, product_id]
+    );
+
+    if (existing.rows.length > 0) {
+      const updated = await pool.query(
+        `UPDATE cart_items
+         SET quantity = quantity + $1
+         WHERE user_id = $2 AND product_id = $3
+         RETURNING *`,
+        [quantity, userId, product_id]
+      );
+
+      return res.json(updated.rows[0]);
+    }
+
+    // insert new item
     const result = await pool.query(
       `INSERT INTO cart_items (user_id, product_id, quantity)
        VALUES ($1, $2, $3)
