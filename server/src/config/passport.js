@@ -39,27 +39,63 @@ passport.use(
   )
 );
 
-// -------------------- DISCORD STRATEGY (TEST ONLY) --------------------
-passport.use(
-  new DiscordStrategy(
-    {
-      clientID: process.env.DISCORD_CLIENT_ID,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET,
-      callbackURL: process.env.DISCORD_CALLBACK_URL,
-      scope: ["identify", "email"],
-    },
-    (accessToken, refreshToken, profile, done) => {
-      // ⚠️ TEST MODE ONLY (NO DATABASE)
-      const user = {
-        id: profile.id,
-        email: profile.email,
-        username: profile.username,
-      };
+// -------------------- DISCORD STRATEGY --------------------
+passport.use(new DiscordStrategy(
+  {
+    clientID: process.env.DISCORD_CLIENT_ID,
+    clientSecret: process.env.DISCORD_CLIENT_SECRET,
+    callbackURL: process.env.DISCORD_CALLBACK_URL,
+    scope: ["identify", "email"]
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
 
-      return done(null, user);
+      // 1. Check if OAuth account already exists
+      const oauth = await pool.query(
+        `SELECT user_id FROM oauth_accounts
+         WHERE provider = 'discord'
+         AND provider_user_id = $1`,
+        [profile.id]
+      );
+
+      if (oauth.rows.length > 0) {
+        return done(null, { id: oauth.rows[0].user_id });
+      }
+
+      // 2. Try to match existing user by email
+      let user = await pool.query(
+        `SELECT * FROM users WHERE email = $1`,
+        [profile.email]
+      );
+
+      // 3. If no user exists → create one (Phase 1 allows this)
+      if (user.rows.length === 0) {
+        user = await pool.query(
+          `INSERT INTO users (email, password_hash)
+           VALUES ($1, NULL)
+           RETURNING *`,
+          [profile.email]
+        );
+      }
+
+      const userId = user.rows[0].id;
+
+      // 4. Link OAuth account
+      await pool.query(
+        `INSERT INTO oauth_accounts
+         (user_id, provider, provider_user_id, provider_email)
+         VALUES ($1, 'discord', $2, $3)`,
+        [userId, profile.id, profile.email]
+      );
+
+      // 5. CRITICAL: return DB user.id ONLY
+      return done(null, { id: userId });
+
+    } catch (err) {
+      return done(err, null);
     }
-  )
-);
+  }
+));
 
 // -------------------- SESSION --------------------
 passport.serializeUser((user, done) => {  

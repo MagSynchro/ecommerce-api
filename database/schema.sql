@@ -7,16 +7,16 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
 id SERIAL PRIMARY KEY,
 email VARCHAR(255) UNIQUE NOT NULL,
-password_hash TEXT NOT NULL
+password_hash TEXT
 );
 CREATE TABLE oauth_accounts (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    provider VARCHAR(50) NOT NULL, 
-    provider_user_id VARCHAR(255) NOT NULL,
-    provider_email VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(provider, provider_user_id),
+id SERIAL PRIMARY KEY,
+user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+provider VARCHAR(50) NOT NULL, 
+provider_user_id VARCHAR(255) NOT NULL,
+provider_email VARCHAR(255) NOT NULL,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+UNIQUE(provider, provider_user_id),
 );
 CREATE TABLE products (
 id SERIAL PRIMARY KEY,
