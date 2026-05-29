@@ -13,15 +13,31 @@ router.get(
   }),
   async (req, res) => {
     try {
-      // At this point, req.user is guaranteed to exist
-      // because Passport successfully authenticated the user
-
-      // OPTIONAL: you can attach extra data here later
-      // e.g. req.user.cart merge trigger flag, etc.
-
       return res.redirect("http://localhost:5173/");
     } catch (err) {
       console.error("Discord callback error:", err);
+      return res.redirect("/login");
+    }
+  }
+);
+
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"]
+  })
+);
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login",
+    session: true
+  }),
+  async (req, res) => {
+    try {   return res.redirect("http://localhost:5173/");
+    } catch (err) {
+      console.error("Google callback error:", err);
       return res.redirect("/login");
     }
   }

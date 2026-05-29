@@ -10,7 +10,12 @@ function LoginPage() {
         password: "",
     });
     const [error, setError] = useState("");
-
+    const loginWithDiscord = () => {
+  window.location.href = "http://localhost:3000/auth/discord";
+};
+const loginWithGoogle = () => {
+  window.location.href = "http://localhost:3000/auth/google";
+};
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -75,6 +80,12 @@ function LoginPage() {
                 <button type="submit">
                     Login
                 </button>
+                <button type="button" onClick={loginWithDiscord}>
+                    Login with Discord
+                </button>
+                <button onClick={loginWithGoogle}>
+  Continue with Google
+</button>
             </form>
         </div>
     );

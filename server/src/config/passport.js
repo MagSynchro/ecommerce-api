@@ -1,6 +1,7 @@
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const DiscordStrategy = require("passport-discord").Strategy;
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const bcrypt = require("bcryptjs");
 const pool = require("../../../database/connection");
 
@@ -38,6 +39,66 @@ passport.use(
     }
   )
 );
+
+passport.use(new GoogleStrategy(
+  {
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+
+      // 1. Check existing OAuth link
+      const oauth = await pool.query(
+        `SELECT user_id FROM oauth_accounts
+         WHERE provider = 'google'
+         AND provider_user_id = $1`,
+        [profile.id]
+      );
+
+      if (oauth.rows.length > 0) {
+        return done(null, { id: oauth.rows[0].user_id });
+      }
+
+      // 2. Email match fallback
+      let user = await pool.query(
+        `SELECT * FROM users WHERE email = $1`,
+        [profile.emails?.[0]?.value]
+      );
+
+      // 3. Create user if needed
+      if (user.rows.length === 0) {
+        user = await pool.query(
+          `INSERT INTO users (email, password_hash)
+           VALUES ($1, NULL)
+           RETURNING *`,
+          [profile.emails?.[0]?.value]
+        );
+      }
+
+      const userId = user.rows[0].id;
+
+      // 4. Link OAuth account
+      await pool.query(
+        `INSERT INTO oauth_accounts
+         (user_id, provider, provider_user_id, provider_email)
+         VALUES ($1, 'google', $2, $3)`,
+        [
+          userId,
+          profile.id,
+          profile.emails?.[0]?.value
+        ]
+      );
+
+      // 5. MUST return DB id only
+      return done(null, { id: userId });
+
+    } catch (err) {
+      return done(err, null);
+    }
+  }
+));
 
 // -------------------- DISCORD STRATEGY --------------------
 passport.use(new DiscordStrategy(
