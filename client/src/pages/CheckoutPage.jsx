@@ -1,5 +1,18 @@
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import request from "../api/client";
+
+const handleCheckout = async () => {
+  try {
+    const res = await request("/checkout/create-session", {
+      method: "POST"
+    });
+
+    window.location.href = res.url;
+  } catch (err) {
+    console.error("Checkout failed", err);
+  }
+};
 
 function CheckoutPage() {
   const { cart } = useCart();
@@ -44,7 +57,7 @@ function CheckoutPage() {
         Total: ${total.toFixed(2)}
       </h3>
 
-      <button>
+      <button onClick={handleCheckout}>
         Place Order
       </button>
     </div>
