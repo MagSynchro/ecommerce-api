@@ -9,11 +9,10 @@ VALUES
 ('Mouse', 19.99, 'A compact wireless gaming mouse.', 'A wireless mouse.','https://placehold.co/800?text=Wireless+Mouse&font=roboto' );
 INSERT INTO cart_items (user_id, product_id, quantity)
 VALUES
-(1, 1, 1),
-(1, 2, 2);
-INSERT INTO orders (user_id)
+(1, 1, 1);
+INSERT INTO orders (user_id, created_at, stripe_session_id, status)
 VALUES
-(1);
+(1, CURRENT_TIMESTAMP, 'sess_123', 'pending');
 INSERT INTO order_items (order_id, product_id, quantity, price_at_time)
 VALUES
 (1, 1, 1, 999.99);
