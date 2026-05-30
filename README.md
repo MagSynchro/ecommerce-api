@@ -92,18 +92,23 @@ Any CVC
 
 ## ⚙️ Setup Instructions
 
+### Database
+
+Refer to Schema.sql in Database directory.
+Built targetting PostgreSQL as database.
+
 ### Backend
 
 ```bash```
-cd server
-npm install
-npm run dev
+1. cd server
+2. npm install
+3. npm run dev
 
 ### Frontend
 
 ```bash```
-cd client
-npm install
-npm run dev
+1. cd client
+2. npm install
+3. npm run dev
 
-See .env.example files in both client and server directories.
+See `.env.example` files in both client and server directories.
