@@ -35,6 +35,7 @@ quantity INTEGER NOT NULL CHECK (quantity > 0)
 CREATE TABLE orders (
 id SERIAL PRIMARY KEY,
 user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+stripe_session_id VARCHAR(255),
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE order_items (
