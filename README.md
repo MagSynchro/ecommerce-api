@@ -97,8 +97,6 @@ Any CVC
 ```bash```
 cd server
 npm install
-
-```bash```
 npm run dev
 
 ### Frontend
