@@ -3,7 +3,6 @@ import { useAuth } from "./AuthContext";
 import request from "../api/client";
 
 const CartContext = createContext();
-
 const CART_KEY = "cart";
 
 /* ---------------------------------------
@@ -200,6 +199,24 @@ useEffect(() => {
     setCart(prev => prev.filter(item => item.id !== id));
   };
 
+
+
+const refreshCart = async () => { 
+
+  try {
+    if (!isAuthenticated) {
+      setCart(getStoredCart());
+      return;
+    }
+
+    const dbCart = await request("/cart");
+
+    setCart(normalizeDbCart(dbCart));
+  } catch (err) {
+    console.error("Failed to refresh cart:", err);
+  }
+};
+
   /* ---------------------------------------
      LOGOUT RESET
   --------------------------------------- */
@@ -222,6 +239,7 @@ useEffect(() => {
         addToCart,
         updateQuantity,
         removeFromCart,
+        refreshCart,
         resetCart
       }}
     >

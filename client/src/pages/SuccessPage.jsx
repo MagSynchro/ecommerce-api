@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import request from "../api/client";
+import { useCart } from "../context/CartContext";
+
+
 
 function SuccessPage() {
-  const [searchParams] = useSearchParams();
+  const { refreshCart } = useCart();
 
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [orderId, setOrderId] = useState(null);
@@ -21,6 +25,8 @@ function SuccessPage() {
         const result = await request(
           `/checkout/verify/${sessionId}`
         );
+
+        await refreshCart();
 
         setOrderId(result.orderId);
       } catch (err) {
