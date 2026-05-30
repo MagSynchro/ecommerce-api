@@ -28,6 +28,7 @@ function Layout() {
           {isAuthenticated ? (
             <>
               <span>{user?.email}</span>
+              <Link to="/order-history">Order History</Link>
               <button onClick={logout}>Logout</button>
             </>
           ) : (

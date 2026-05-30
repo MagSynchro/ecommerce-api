@@ -9,6 +9,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from "./components/ProtectedRoute";
 import CheckoutPage from "./pages/CheckoutPage";
+import OrderHistory from "./pages/OrderHistory";
+import OrderDetail from "./pages/OrderDetail";
 import SuccessPage from "./pages/SuccessPage";
 
 function App() {
@@ -22,7 +24,23 @@ function App() {
           path="checkout"
           element={
             <ProtectedRoute>
-              <CheckoutPage />
+              <CheckoutPage />              
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="order-history"
+          element={
+            <ProtectedRoute>
+              <OrderHistory />              
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="orders/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetail />              
             </ProtectedRoute>
           }
         />

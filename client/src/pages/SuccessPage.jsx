@@ -5,6 +5,7 @@ import { useCart } from "../context/CartContext";
 
 
 
+
 function SuccessPage() {
   const { refreshCart } = useCart();
 
@@ -67,7 +68,7 @@ function SuccessPage() {
 
       <p>
         Order ID#{orderId} has been confirmed.
-      </p>
+      </p>      
     </div>
   );
 }
