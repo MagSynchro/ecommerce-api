@@ -29,6 +29,7 @@ function Layout() {
             <>
               <span>{user?.email}</span>
               <Link to="/order-history">Order History</Link>
+              {user?.role === "admin" && <Link to="/admin">Admin</Link>}
               <button onClick={logout}>Logout</button>
             </>
           ) : (

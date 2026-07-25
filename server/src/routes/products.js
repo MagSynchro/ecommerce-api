@@ -1,15 +1,23 @@
 
 const express = require('express');
 const productController = require('../controllers/productsController');
+const { ensureAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 /**
  * @swagger
  * /products:
  *   get:
- *     summary: Get all 
+ *     summary: Get all
  *     tags:
  *       - Products
+ *     parameters:
+ *       - in: query
+ *         name: includeInactive
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *         description: Include deactivated products (admin use)
  *     responses:
  *       200:
  *         description: A list of products
@@ -77,7 +85,7 @@ router.get('/:id', productController.getProductById);
  *         description: Invalid input or duplicate product
  */
 
-router.post('/', productController.createProduct);
+router.post('/', ensureAdmin, productController.createProduct);
 
 /**
  * @swagger
@@ -117,13 +125,14 @@ router.post('/', productController.createProduct);
  *         description: Product not found
  */
 
-router.put('/:id', productController.updateProduct);
+router.put('/:id', ensureAdmin, productController.updateProduct);
 
 /**
  * @swagger
  * /products/{id}:
  *   delete:
- *     summary: Delete a product
+ *     summary: Deactivate a product
+ *     description: Soft-deletes the product (sets is_active = false) rather than removing the row, since past orders reference it.
  *     tags:
  *       - Products
  *     parameters:
@@ -135,11 +144,11 @@ router.put('/:id', productController.updateProduct);
  *         description: Product ID
  *     responses:
  *       204:
- *         description: Product deleted successfully
+ *         description: Product deactivated successfully
  *       404:
  *         description: Product not found
  */
 
-router.delete('/:id', productController.removeProduct);
+router.delete('/:id', ensureAdmin, productController.removeProduct);
 
 module.exports = router;

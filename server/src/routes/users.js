@@ -57,7 +57,8 @@ router.post("/login", (req, res, next) => {
         message: "Login successful",
         user: {
           id: user.id,
-          email: user.email
+          email: user.email,
+          role: user.role
         }
       });
     });
@@ -263,9 +264,9 @@ router.get("/me", (req, res) => {
     return res.status(401).json({ message: "Not authenticated" });
   }
 
-  const { id, email } = req.user;
+  const { id, email, role } = req.user;
 
-  res.json({ id, email });
+  res.json({ id, email, role });
 });
 
 /**

@@ -1,7 +1,12 @@
 const pool = require('../../../database/connection');
 
 exports.getAllProducts = async (req, res) => {
-  const result = await pool.query('SELECT * FROM products');
+  const includeInactive = req.query.includeInactive === 'true';
+  const result = await pool.query(
+    includeInactive
+      ? 'SELECT * FROM products ORDER BY id'
+      : 'SELECT * FROM products WHERE is_active = true ORDER BY id'
+  );
   res.json(result.rows);
 };
 
@@ -39,9 +44,9 @@ exports.createProduct = async (req, res) => {
 exports.removeProduct = async (req, res) => {
   const { id } = req.params;
   const result = await pool.query(
-    'DELETE FROM products WHERE id = $1 RETURNING *', [id]
+    'UPDATE products SET is_active = false WHERE id = $1 RETURNING *', [id]
   );
-  
+
   if (result.rows.length === 0) {
     return res.status(404).json({ message: 'Product not found' });
   }
@@ -51,16 +56,17 @@ exports.removeProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, price, description } = req.body;
+  const { name, price, description, is_active } = req.body;
 
   const result = await pool.query(
     `UPDATE products
-     SET name = $1,
-         price = $2,
-         description = $3
-     WHERE id = $4
+     SET name = COALESCE($1, name),
+         price = COALESCE($2, price),
+         description = COALESCE($3, description),
+         is_active = COALESCE($4, is_active)
+     WHERE id = $5
      RETURNING *`,
-    [name, price, description, id]
+    [name, price, description, is_active, id]
   );
 
   if (result.rows.length === 0) {

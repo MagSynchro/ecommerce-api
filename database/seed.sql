@@ -1,7 +1,7 @@
-INSERT INTO users (email, password_hash)
+INSERT INTO users (email, password_hash, role)
 VALUES
-('alice@test.com', 'hashed_pw_1'),
-('bob@test.com', 'hashed_pw_2');
+('alice@test.com', 'hashed_pw_1', 'admin'),
+('bob@test.com', 'hashed_pw_2', 'user');
 INSERT INTO products (name, price, description, short_description, image_url)
 VALUES
 ('Laptop', 999.99, 'Basic dev laptop for you know, doing dev things.', 'Basic dev laptop.', 'https://placehold.co/800?text=Basic+Laptop&font=roboto' ),

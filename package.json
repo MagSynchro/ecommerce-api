@@ -1,0 +1,10 @@
+{
+  "name": "ecommerce-api-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root-level dependency shim so database/connection.js (used by server/) can resolve 'pg' via Node's module resolution.",
+  "license": "ISC",
+  "dependencies": {
+    "pg": "^8.22.0"
+  }
+}
